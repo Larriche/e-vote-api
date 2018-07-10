@@ -17,5 +17,5 @@ var VoteLogSchema = mongoose.schema({
     timestamps: true
 });
 
-var VoteLog = mongoose.model('VoteLog', VoteLog);
+var VoteLog = mongoose.model('VoteLog', VoteLogSchema);
 module.exports = VoteLog;
