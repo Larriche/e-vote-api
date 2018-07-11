@@ -1,4 +1,4 @@
-// Load required models
+// Load required modules
 const mongoose = require('mongoose');
 
 var ElectionSchema = new mongoose.Schema({
