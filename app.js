@@ -3,6 +3,7 @@ const dotenv = require('dotenv').config();
 const app = require('express')();
 const http = require('http').Server(app);
 const port = process.env.PORT || 3000;
+const bodyParser = require('body-parser');
 const apiRoutes = require('./src/routes');
 
 const db_username = process.env.DB_USERNAME;
@@ -17,8 +18,20 @@ var db = mongoose.connection;
 // Log mongodb errors
 db.on('error', console.error.bind(console, 'connection error:'));
 
+// Pass incoming requests through body parser
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
 // Set up routes
 app.use('/api/v1', apiRoutes);
+
+// Final error handler
+app.use(function (err, req, res, next) {
+    console.log(err);
+    res.status(err.status || 500).json({
+        errors: ['An unknown error occurred']
+    });
+});
 
 http.listen(port, function () {
     console.log('Express server is listening on port', port);
