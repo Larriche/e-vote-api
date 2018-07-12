@@ -87,7 +87,7 @@ const auth = {
                         error.status = 500;
                         return next(error);
                     } else if (!user) {
-                        return res.status(401).json({
+                        return response.status(401).json({
                             error: 'The given credentials do not match our records'
                         });
                     }
