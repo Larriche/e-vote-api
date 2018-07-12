@@ -4,7 +4,7 @@ const app = require('express')();
 const http = require('http').Server(app);
 const port = process.env.PORT || 3000;
 const bodyParser = require('body-parser');
-const apiRoutes = require('./src/routes');
+const setupRoutes = require('./src/routes');
 
 const db_username = process.env.DB_USERNAME;
 const db_password = process.env.DB_PASSWORD;
@@ -22,8 +22,7 @@ db.on('error', console.error.bind(console, 'connection error:'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// Set up routes
-app.use('/api/v1', apiRoutes);
+setupRoutes(app);
 
 // Final error handler
 app.use(function (err, req, res, next) {
@@ -35,4 +34,4 @@ app.use(function (err, req, res, next) {
 
 http.listen(port, function () {
     console.log('Express server is listening on port', port);
-})
+});
