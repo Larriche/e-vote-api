@@ -14,7 +14,11 @@ const verifyAuthentication = function (request, response, next) {
 
     jwt.verify(token, secret, function (err, decoded) {
         if (err) return response.status(401).json({ auth: false, message: 'Failed to authenticate token.' });
-        request.jwt_decoded = decoded;
+
+        request.user = {
+            id: decoded.id
+        };
+
         next();
     });
 };

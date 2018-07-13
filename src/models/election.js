@@ -1,7 +1,8 @@
 // Load required modules
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-var ElectionSchema = new mongoose.Schema({
+var ElectionSchema = new Schema({
     name: {
         type: String,
         required: true,
