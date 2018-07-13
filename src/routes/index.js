@@ -15,6 +15,7 @@ function routes(router) {
     // Election Routes
     router.get('/elections', elections.index);
     router.post('/elections', elections.store);
+    router.put('/elections/:id', elections.update);
 }
 
 const setupRouter = function (app) {
