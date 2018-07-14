@@ -92,63 +92,80 @@ const elections = {
      * @param {Object} next The next callable
      */
     update (request, response, next) {
-        // Set up request data fields validator
-        let validator = new Validator(request.body, {
-            name: 'required',
-            start_time: 'required',
-            end_time: 'required'
-        });
+        let validationErrors = Election.validate(request.body);
 
-        if (validator.passes()) {
-            let electionData = {
-                name: request.body.name,
-                start_time: request.body.start_time,
-                end_time: request.body.end_time
-            };
+        let electionData = {
+            name: request.body.name,
+            start_time: request.body.start_time,
+            end_time: request.body.end_time
+        };
 
-            const noObjectMessage = 'Election was not found';
+        Election.findById(request.params.id)
+            .then(election => {
+                if (!election) {
+                    let error = new Error();
 
-            Election.findByIdAndUpdate(request.params.id, electionData)
-                .then(updatedElection => {
-                    // Reload saved election with related items
-                    Election.findOne({ _id: request.params.id })
-                        .populate('user', 'id name email')
-                        .then(election => {
-                            if (!election) {
-                                return response.status(404).json({
-                                    status: 'sofailed',
-                                    message: noObjectMessage
-                                });
-                            }
+                    error.status = 404;
+                    error.message = 'Election was not found';
 
-                            let data = {
-                                election,
-                                status: 'success'
-                            };
+                    return Promise.reject(error);
+                } else {
+                    if (Object.keys(validationErrors).length) {
+                        let error = new Error();
 
-                            return response.status(200).json(data);
-                        })
-                        .catch(error => {
-                            error.status = 500;
-                            next(error);
-                        });
-                }).catch(error => {
-                    if (error.kind === 'ObjectId') {
-                        return response.status(404).json({
-                            status: 'failed',
-                            message: noObjectMessage
+                        error.status = 422;
+                        error.errors = validationErrors;
+
+                        return Promise.reject(error);
+                    } else {
+                        return Election.findOne({
+                            name: request.body.name,
+                            user: request.user.id,
+                            _id: { $ne: request.params.id }
                         });
                     }
+                }
+            })
+            .then(election => {
+                if (election) {
+                    let error = new Error();
 
+                    error.status = 422;
+                    error.errors = {
+                        name: ['Another election with that name already exists']
+                    };
+
+                    return Promise.reject(error);
+                } else {
+                    return Election.findByIdAndUpdate(request.params.id, electionData);
+                }
+            })
+            .then(updatedElection => {
+                return Election.findOne({ _id: request.params.id })
+                    .populate('user', 'id name email');
+            })
+            .then(election => {
+                let data = {
+                    election,
+                    status: 'success'
+                };
+
+                return response.status(200).json(data);
+            })
+            .catch(error => {
+                if (error.status == 422) {
+                    return response.status(422).json({
+                        errors: error.errors
+                    });
+                } else if(error.status == 404) {
+                    return response.status(404).json({
+                        message: error.message
+                    });
+                } else {
                     error.status = 500;
                     next(error);
-                });
-        } else {
-            response.status(422).json({
-                errors: validator.errors.all(),
-                status: 'failed'
+                }
             });
-        }
     }
 };
 
