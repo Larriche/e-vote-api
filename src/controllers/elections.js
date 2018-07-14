@@ -20,55 +20,68 @@ const elections = {
     /**
      * Create a new election
      *
-     * @param {*} request
-     * @param {*} response
-     * @param {*} next
+     * @param {*} request Http Request
+     * @param {*} response Http Response
+     * @param {*} next Next callable
      */
     store (request, response, next) {
-        // Set up request data fields validator
-        let validator = new Validator(request.body, {
-            name: 'required',
-            start_time: 'required',
-            end_time: 'required'
-        });
+        let validationErrors = Election.validate(request.body);
 
-        if (validator.passes()) {
-            let electionData = {
-                name: request.body.name,
-                start_time: request.body.start_time,
-                end_time: request.body.end_time,
-                code: uuid(),
-                user: request.user.id
-            };
-
-            Election.create(electionData, (error, savedElection) => {
-                if (error) {
-                    error.status = 500;
-                    next(error);
-                }
-
-                // Reload saved election with related items
-                Election.findOne({_id: savedElection._id})
-                    .populate('user', 'id name email')
-                    .then(election => {
-                        let data = {
-                            election,
-                            status: 'success'
-                        };
-
-                        return response.status(200).json(data);
-                    })
-                    .catch(error => {
-                        error.status = 500;
-                        next(error);
-                    });
-            });
-        } else {
-            response.status(422).json({
-                errors: validator.errors.all(),
+        if (Object.keys(validationErrors).length) {
+            return response.status(422).json({
+                errors: validationErrors,
                 status: 'failed'
             });
         }
+
+        let electionData = {
+            name: request.body.name,
+            start_time: request.body.start_time,
+            end_time: request.body.end_time,
+            code: uuid(),
+            user: request.user.id
+        };
+
+        // Check for uniqueness of this election in the user's set of elections
+        Election.findOne({name: request.body.name, user: request.user.id})
+            .then(election => {
+                if (election) {
+                    let error = new Error();
+
+                    error.status = 422;
+                    error.errors = {
+                        name: ['An election with that name already exists']
+                    };
+
+                    return Promise.reject(error);
+                } else {
+                    return Election.create(electionData);
+                }
+            })
+            .then((savedElection) => {
+                // Reload saved election with related items
+                return Election.findOne({ _id: savedElection._id })
+                    .populate('user', 'id name email');
+            })
+            .then(election => {
+                let data = {
+                    election,
+                    status: 'success'
+                };
+
+                return response.status(200).json(data);
+            })
+            .catch(error => {
+                if (error.status == 422) {
+                    return response.status(422).json({
+                        errors: error.errors
+                    });
+                }
+                else {
+                    error.status = 500;
+                    next(error);
+                }
+            });
     },
 
     /**
