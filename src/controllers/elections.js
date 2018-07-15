@@ -11,10 +11,17 @@ const elections = {
      * @param {Object} next Next callable
      */
     index (request, response, next) {
-        return response.status(200).json({
-            status: 'success',
-            elections: []
-        });
+        Election.find({user: request.user.id})
+            .then(elections => {
+                return response.status(200).json({
+                    status: 'success',
+                    elections
+                });
+            })
+            .catch(error => {
+                error.status = 500;
+                next(error);
+            });
     },
 
     /**
