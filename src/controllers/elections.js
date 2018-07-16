@@ -92,6 +92,42 @@ const elections = {
     },
 
     /**
+     * Get the election with the given ID
+     *
+     * @param {Object} request The HTTP request
+     * @param {Object} response The HTTP response
+     * @param {Object} next The next callable
+     */
+    show (request, response, next) {
+        Election.findById(request.params.id)
+            .then(election => {
+                if (election) {
+                    if (election.user == request.user.id) {
+                        return response.status(200).json({
+                            status: 'success',
+                            election
+                        });
+                    } else {
+                        return response.status(403).json({
+                            status: 'failed',
+                            message: 'You are not allowed to access this election'
+                        });
+                    }
+
+                } else {
+                    return response.status(404).json({
+                        status: 'failed',
+                        message: 'Election was not found'
+                    });
+                }
+            })
+            .catch(error => {
+                error.status = 500;
+                next(error);
+            });
+    },
+
+    /**
      * Update election whose id is given with given data
      *
      * @param {Object} request Http request
