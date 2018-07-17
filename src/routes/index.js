@@ -17,6 +17,7 @@ function routes(router) {
     router.post('/elections', elections.store);
     router.get('/elections/:id', elections.show);
     router.put('/elections/:id', elections.update);
+    router.delete('/elections/:id', elections.destroy);
 }
 
 const setupRouter = function (app) {
