@@ -3,6 +3,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Validator = require('validatorjs');
+const mongoosePaginate = require('mongoose-paginate');
+
 
 var ElectionSchema = new Schema({
     name: {

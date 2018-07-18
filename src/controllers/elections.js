@@ -1,6 +1,8 @@
 const Validator = require('validatorjs');
 const Election = require('../models/election');
 const uuid = require('uuid/v1');
+const services = require('../services');
+const Utilities = services.Utilities;
 
 const elections = {
     /**
@@ -11,12 +13,24 @@ const elections = {
      * @param {Object} next Next callable
      */
     index (request, response, next) {
-        Election.find({user: request.user.id})
-            .then(elections => {
-                return response.status(200).json({
-                    status: 'success',
-                    elections
-                });
+        let pagination = Utilities.getPaginationParams(request.query);
+        let query = Election.find({user: request.user.id});
+        let responseData = {
+            status: 'success'
+        };
+
+        query = query.skip(pagination.skip).limit(pagination.limit);
+
+        query.then(elections => {
+                responseData.elections = elections;
+                return Election.countDocuments();
+            })
+            .then(count => {
+                if (pagination.limit) {
+                    responseData = Utilities.setPaginationFields(request, responseData, count);
+                }
+
+                return response.status(200).json(responseData);
             })
             .catch(error => {
                 error.status = 500;
