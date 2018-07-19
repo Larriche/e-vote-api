@@ -14,7 +14,9 @@ const elections = {
      */
     index (request, response, next) {
         let pagination = Utilities.getPaginationParams(request.query);
-        let query = Election.find({user: request.user.id});
+        let filters = Election.getQueryFilters(request);
+        let query = Election.find(filters);
+
         let responseData = {
             status: 'success'
         };
@@ -23,7 +25,12 @@ const elections = {
 
         query.then(elections => {
                 responseData.elections = elections;
-                return Election.countDocuments();
+
+                if (elections.length) {
+                    return Election.countDocuments(filters);
+                } else {
+                    return Promise.resolve(0);
+                }
             })
             .then(count => {
                 if (pagination.limit) {

@@ -59,7 +59,7 @@ const Utilities = {
             responseData.pagination_details.last_page_url = lastPageUrl;
         }
 
-        if (total - (currPage * perPage)) {
+        if (total - (currPage * perPage) > 0) {
             responseData.pagination_details.next_page_url = nextPageUrl;
         }
 

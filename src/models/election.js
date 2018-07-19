@@ -25,7 +25,8 @@ var ElectionSchema = new Schema({
     timestamps: true
 });
 
-ElectionSchema.statics.validate = function(data) {
+ElectionSchema.statics.validate = function(data)
+{
     let rules = {
         name: 'required',
         start_time: 'required|date',
@@ -48,6 +49,26 @@ ElectionSchema.statics.validate = function(data) {
 
     return errors;
 }
+
+/**
+ * Get the query fliters to be used for getting election listing based on
+ * request params
+ *
+ * @param {Object} request The request
+ * @param {Promise} Query filters
+ */
+ElectionSchema.statics.getQueryFilters = function (request)
+{
+    // We are only getting elections of the authenticated user
+    let query = {user: request.user.id};
+
+    if (request.query.hasOwnProperty('start_time_before')) {
+        query.start_time = Object.assign({}, query.start_time, { $lte: new Date(request.query.start_time_before)});
+    }
+
+    return query;
+}
+
 
 var Election = mongoose.model('Election', ElectionSchema);
 module.exports = Election;
