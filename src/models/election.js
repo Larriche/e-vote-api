@@ -5,6 +5,9 @@ const Schema = mongoose.Schema;
 const Validator = require('validatorjs');
 const mongoosePaginate = require('mongoose-paginate');
 
+const services = require('../services');
+const Utilities = services.Utilities;
+
 
 var ElectionSchema = new Schema({
     name: {
@@ -51,31 +54,43 @@ ElectionSchema.statics.validate = function(data)
 }
 
 /**
- * Get the query fliters to be used for getting election listing based on
- * request params
+ * Get the query for object for getting election listings
  *
  * @param {Object} request The request
  * @param {Promise} Query filters
  */
-ElectionSchema.statics.getQueryFilters = function (request)
+ElectionSchema.statics.getQuery = function (request)
 {
-    // We are only getting elections of the authenticated user
-    let query = {user: request.user.id};
+    let query = Election.find();
 
     if (request.query.hasOwnProperty('start_time_before')) {
-        query.start_time = Object.assign({}, query.start_time, { $lte: new Date(request.query.start_time_before)});
+        query.where('start_time').lte(new Date(request.query.start_time_before + ' 00:00:00'));
     }
 
     if (request.query.hasOwnProperty('start_time_after')) {
-        query.start_time = Object.assign({}, query.start_time,  { $gte: new Date(request.query.start_time_after)});
+        query.where('start_time').gte(new Date(request.query.start_time_after + ' 23:59:00'));
     }
 
     if (request.query.hasOwnProperty('created_before')) {
-        query.createdAt = Object.assign({}, query.createdAt, { $lte: new Date(request.query.created_before)});
+        query.where('createdAt').lte(new Date(request.query.created_before + ' 00:00:00'));
     }
 
     if (request.query.hasOwnProperty('created_after')) {
-        query.createdAt = Object.assign({}, query.createdAt, { $gte: new Date(request.query.created_after)});
+        query.where('createdAt').gte(new Date(request.query.created_after + ' 23:59:00'));
+    }
+
+    if (request.query.hasOwnProperty('status')) {
+        if (request.query.status == 'open') {
+            query.and([
+                {start_time: {$lte: new Date()}},
+                {end_time: {$gte: new Date()}}
+            ]);
+        } else {
+            query.or([
+                {start_time: {$gte: new Date()}},
+                {end_time: {$lte: new Date()}}
+            ]);
+        }
     }
 
     return query;

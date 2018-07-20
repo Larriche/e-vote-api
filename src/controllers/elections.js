@@ -14,20 +14,21 @@ const elections = {
      */
     index (request, response, next) {
         let pagination = Utilities.getPaginationParams(request.query);
-        let filters = Election.getQueryFilters(request);
-        let query = Election.find(filters);
+        let query = Election.getQuery(request);
+        let queryFilters = query.getQuery();
+
+        console.log(queryFilters);
 
         let responseData = {
             status: 'success'
         };
 
-        query = query.skip(pagination.skip).limit(pagination.limit).sort('-createdAt');
-
-        query.then(elections => {
+        query.skip(pagination.skip).limit(pagination.limit).sort('-createdAt')
+            .then(elections => {
                 responseData.elections = elections;
 
                 if (elections.length) {
-                    return Election.countDocuments(filters);
+                    return Election.countDocuments(queryFilters);
                 } else {
                     return Promise.resolve(0);
                 }
