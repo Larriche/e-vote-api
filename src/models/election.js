@@ -66,6 +66,18 @@ ElectionSchema.statics.getQueryFilters = function (request)
         query.start_time = Object.assign({}, query.start_time, { $lte: new Date(request.query.start_time_before)});
     }
 
+    if (request.query.hasOwnProperty('start_time_after')) {
+        query.start_time = Object.assign({}, query.start_time,  { $gte: new Date(request.query.start_time_after)});
+    }
+
+    if (request.query.hasOwnProperty('created_before')) {
+        query.createdAt = Object.assign({}, query.createdAt, { $lte: new Date(request.query.created_before)});
+    }
+
+    if (request.query.hasOwnProperty('created_after')) {
+        query.createdAt = Object.assign({}, query.createdAt, { $gte: new Date(request.query.created_after)});
+    }
+
     return query;
 }
 

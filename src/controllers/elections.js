@@ -21,7 +21,7 @@ const elections = {
             status: 'success'
         };
 
-        query = query.skip(pagination.skip).limit(pagination.limit);
+        query = query.skip(pagination.skip).limit(pagination.limit).sort('-createdAt');
 
         query.then(elections => {
                 responseData.elections = elections;
