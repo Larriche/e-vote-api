@@ -55,6 +55,8 @@ ElectionSchema.statics.validate = function(data)
 
 /**
  * Get the query for object for getting election listings
+ * Date-related before and after fields consider the given
+ * date inclusive
  *
  * @param {Object} request The request
  * @param {Promise} Query filters
@@ -64,19 +66,19 @@ ElectionSchema.statics.getQuery = function (request)
     let query = Election.find();
 
     if (request.query.hasOwnProperty('start_time_before')) {
-        query.where('start_time').lte(new Date(request.query.start_time_before + ' 00:00:00'));
+        query.where('start_time').lte(new Date(request.query.start_time_before + ' 23:59:00'));
     }
 
     if (request.query.hasOwnProperty('start_time_after')) {
-        query.where('start_time').gte(new Date(request.query.start_time_after + ' 23:59:00'));
+        query.where('start_time').gte(new Date(request.query.start_time_after + ' 00:00:00'));
     }
 
     if (request.query.hasOwnProperty('created_before')) {
-        query.where('createdAt').lte(new Date(request.query.created_before + ' 00:00:00'));
+        query.where('createdAt').lte(new Date(request.query.created_before + ' 23:59:00'));
     }
 
     if (request.query.hasOwnProperty('created_after')) {
-        query.where('createdAt').gte(new Date(request.query.created_after + ' 23:59:00'));
+        query.where('createdAt').gte(new Date(request.query.created_after + ' 00:00:00'));
     }
 
     if (request.query.hasOwnProperty('status')) {
