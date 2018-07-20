@@ -6,6 +6,7 @@ const middlewares = require('../middlewares');
 
 const auth = require('../controllers/auth');
 const elections = require('../controllers/elections');
+const categories = require('../controllers/categories');
 
 
 function routes(router) {
@@ -18,6 +19,13 @@ function routes(router) {
     router.get('/elections/:id', elections.show);
     router.put('/elections/:id', elections.update);
     router.delete('/elections/:id', elections.destroy);
+
+    // Election category routes
+    //router.get('/election_categories', categories.index);
+    router.post('/election_categories', categories.store);
+    //router.get('/election_categories/:id', categories.show);
+    //router.put('/election_categories/:id', categories.update);
+    //router.delete('/election_categories/:id', categories.destroy);
 }
 
 const setupRouter = function (app) {
