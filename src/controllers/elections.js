@@ -17,8 +17,6 @@ const elections = {
         let query = Election.getQuery(request);
         let queryFilters = query.getQuery();
 
-        console.log(queryFilters);
-
         let responseData = {
             status: 'success'
         };
