@@ -22,6 +22,7 @@ const elections = {
         };
 
         query.skip(pagination.skip).limit(pagination.limit).sort('-createdAt')
+            .populate('categories').populate('user')
             .then(elections => {
                 responseData.elections = elections;
 

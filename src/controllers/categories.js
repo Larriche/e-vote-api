@@ -2,6 +2,7 @@ const Validator = require('validatorjs');
 const services = require('../services');
 const Utilities = services.Utilities;
 const ElectionCategory = require('../models/election_category');
+const Election = require('../models/election');
 
 const categories = {
     /**
@@ -26,6 +27,8 @@ const categories = {
             election: request.body.election_id
         };
 
+        let createdCategory;
+
         ElectionCategory.findOne({name: request.body.name, election: request.body.election_id})
             .then(electionCategory => {
                 if (electionCategory) {
@@ -33,7 +36,7 @@ const categories = {
 
                     error.status = 422;
                     error.errors = {
-                        name: ['An election with that name already exists']
+                        name: ['An election category with that name already exists']
                     };
 
                     return Promise.reject(error);
@@ -42,7 +45,16 @@ const categories = {
                 }
             })
             .then(category => {
-                return ElectionCategory.findOne({_id: category.id}).populate('election');
+                createdCategory = category;
+                return Election.findById(request.body.election_id);
+            })
+            .then(election => {
+                if (election) {
+                    election.categories.push(createdCategory);
+                    election.save();
+                }
+
+                return ElectionCategory.findOne({ _id: createdCategory.id }).populate('election');
             })
             .then(category => {
                 let responseData = {
