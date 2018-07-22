@@ -48,7 +48,7 @@ const elections = {
      * @param {*} response Http Response
      * @param {*} next Next callable
      */
-    store (request, response, next) {
+    async store (request, response, next) {
         let validationErrors = Election.validate(request.body);
 
         if (Object.keys(validationErrors).length) {
@@ -66,46 +66,33 @@ const elections = {
             user: request.user.id
         };
 
-        // Check for uniqueness of this election in the user's set of elections
-        Election.findOne({name: request.body.name, user: request.user.id})
-            .then(election => {
-                if (election) {
-                    let error = new Error();
+        try {
+            // Check for uniqueness of this election in the user's set of elections
+            let existingElection = await Election.findOne({ name: request.body.name, user: request.user.id }).exec();
 
-                    error.status = 422;
-                    error.errors = {
+            if (existingElection) {
+                return response.status(422).json({
+                    errors: {
                         name: ['An election with that name already exists']
-                    };
+                    }
+                });
+            }
 
-                    return Promise.reject(error);
-                } else {
-                    return Election.create(electionData);
-                }
-            })
-            .then((savedElection) => {
-                // Reload saved election with related items
-                return Election.findOne({ _id: savedElection._id })
-                    .populate('user', 'id name email');
-            })
-            .then(election => {
-                let data = {
-                    election,
-                    status: 'success'
-                };
+            let savedElection = await Election.create(electionData);
+            let election = await Election.findOne({ _id: savedElection._id })
+                .populate('user', 'id name email')
+                .exec();
 
-                return response.status(200).json(data);
-            })
-            .catch(error => {
-                if (error.status == 422) {
-                    return response.status(422).json({
-                        errors: error.errors
-                    });
-                }
-                else {
-                    error.status = 500;
-                    next(error);
-                }
-            });
+            let data = {
+                election,
+                status: 'success'
+            };
+
+            return response.status(200).json(data);
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
     },
 
     /**
