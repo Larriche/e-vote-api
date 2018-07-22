@@ -142,7 +142,7 @@ const elections = {
      * @param {Object} response Http Response
      * @param {Object} next The next callable
      */
-    update (request, response, next) {
+    async update (request, response, next) {
         let validationErrors = Election.validate(request.body);
 
         let electionData = {
@@ -151,72 +151,68 @@ const elections = {
             end_time: request.body.end_time
         };
 
-        Election.findById(request.params.id)
-            .then(election => {
-                if (!election) {
-                    let error = new Error();
+        let election;
 
-                    error.status = 404;
-                    error.message = 'Election was not found';
+        try {
+            election = await Election.findById(request.params.id).exec();
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
 
-                    return Promise.reject(error);
-                } else {
-                    if (Object.keys(validationErrors).length) {
-                        let error = new Error();
-
-                        error.status = 422;
-                        error.errors = validationErrors;
-
-                        return Promise.reject(error);
-                    } else {
-                        return Election.findOne({
-                            name: request.body.name,
-                            user: request.user.id,
-                            _id: { $ne: request.params.id }
-                        });
-                    }
-                }
-            })
-            .then(election => {
-                if (election) {
-                    let error = new Error();
-
-                    error.status = 422;
-                    error.errors = {
-                        name: ['Another election with that name already exists']
-                    };
-
-                    return Promise.reject(error);
-                } else {
-                    return Election.findByIdAndUpdate(request.params.id, electionData);
-                }
-            })
-            .then(updatedElection => {
-                return Election.findOne({ _id: request.params.id })
-                    .populate('user', 'id name email');
-            })
-            .then(election => {
-                let data = {
-                    election,
-                    status: 'success'
-                };
-
-                return response.status(200).json(data);
-            })
-            .catch(error => {
-                if (error.status == 422) {
-                    return response.status(422).json({
-                        errors: error.errors
-                    });
-                } else if(error.status == 404) {
-                    return response.status(404).json({
-                        message: error.message
-                    });
-                } else {
-                    error.status = 500;
-                    next(error);
-                }
+        if (!election) {
+            return response.status(404).json({
+                message: 'Election was not found',
+                status: 'failed'
             });
+        }
+
+        if (Object.keys(validationErrors).length) {
+            return response.status(422).json({
+                errors: validationErrors,
+                status: 'failed'
+            });
+        }
+
+        let existingElection;
+
+        try {
+            existingElection = await Election.findOne({
+                name: request.body.name,
+                user: request.user.id,
+                _id: { $ne: request.params.id }
+            })
+            .exec();
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
+
+        if (existingElection) {
+            return response.status(422).json({
+                errors: {
+                    name: ['Another election with that name already exists']
+                },
+                status: 'failed'
+            });
+        }
+
+        let updatedElection;
+
+        try {
+            updatedElection = Election.findByIdAndUpdate(request.params.id, electionData).exec();
+            election = await Election.findOne({ _id: request.params.id })
+                .populate('user', 'id name email')
+                .exec();
+
+            return response.status(200).json({
+                election,
+                status: 'success'
+            });
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
     },
 
     /**
