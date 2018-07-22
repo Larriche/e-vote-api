@@ -44,9 +44,9 @@ const elections = {
     /**
      * Create a new election
      *
-     * @param {*} request Http Request
-     * @param {*} response Http Response
-     * @param {*} next Next callable
+     * @param {Object} request Http Request
+     * @param {Object} response Http Response
+     * @param {Object} next Next callable
      */
     async store (request, response, next) {
         let validationErrors = Election.validate(request.body);
@@ -68,7 +68,10 @@ const elections = {
 
         try {
             // Check for uniqueness of this election in the user's set of elections
-            let existingElection = await Election.findOne({ name: request.body.name, user: request.user.id }).exec();
+            let existingElection = await Election.findOne({ name: request.body.name,
+                    user: request.user.id
+                })
+                .exec();
 
             if (existingElection) {
                 return response.status(422).json({
@@ -102,33 +105,34 @@ const elections = {
      * @param {Object} response The HTTP response
      * @param {Object} next The next callable
      */
-    show (request, response, next) {
-        Election.findById(request.params.id)
-            .then(election => {
-                if (election) {
-                    if (election.user == request.user.id) {
-                        return response.status(200).json({
-                            status: 'success',
-                            election
-                        });
-                    } else {
-                        return response.status(403).json({
-                            status: 'failed',
-                            message: 'You are not allowed to access this election'
-                        });
-                    }
+    async show (request, response, next) {
+        let election;
 
-                } else {
-                    return response.status(404).json({
-                        status: 'failed',
-                        message: 'Election was not found'
-                    });
-                }
-            })
-            .catch(error => {
-                error.status = 500;
-                next(error);
+        try {
+            election = await Election.findById(request.params.id).exec();
+        } catch (error) {
+            error.status = 500;
+            return next(error);
+        }
+
+        if (election) {
+            if (election.user == request.user.id) {
+                return response.status(200).json({
+                    status: 'success',
+                    election
+                });
+            } else {
+                return response.status(403).json({
+                    status: 'failed',
+                    message: 'You are not allowed to access this election'
+                });
+            }
+        } else {
+            return response.status(404).json({
+                status: 'failed',
+                message: 'Election was not found'
             });
+        }
     },
 
     /**
