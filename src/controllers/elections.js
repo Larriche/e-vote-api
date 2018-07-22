@@ -109,14 +109,16 @@ const elections = {
         let election;
 
         try {
-            election = await Election.findById(request.params.id).exec();
+            election = await Election.findById(request.params.id)
+                .populate('user', 'id name email')
+                .exec();
         } catch (error) {
             error.status = 500;
             return next(error);
         }
 
         if (election) {
-            if (election.user == request.user.id) {
+            if (election.user._id == request.user.id) {
                 return response.status(200).json({
                     status: 'success',
                     election
@@ -222,35 +224,36 @@ const elections = {
      * @param {Object} response The HTTP response
      * @param {Object} next The next callable
      */
-    destroy (request, response, next) {
-        Election.findById(request.params.id)
-            .then(election => {
-                if (election) {
-                    if (election.user == request.user.id) {
-                        election.remove();
+    async destroy (request, response, next) {
+        let election;
 
-                        return response.status(200).json({
-                            status: 'success',
-                            message: 'Election has been deleted'
-                        });
-                    } else {
-                        return response.status(403).json({
-                            status: 'failed',
-                            message: 'You are not allowed to access this election'
-                        });
-                    }
+        try {
+            election = await Election.findById(request.params.id).exec();
+        } catch (error) {
+            error.status = 500;
+            return next(error);
+        }
 
-                } else {
-                    return response.status(404).json({
-                        status: 'failed',
-                        message: 'Election was not found'
-                    });
-                }
-            })
-            .catch(error => {
-                error.status = 500;
-                next(error);
+        if (election) {
+            if (election.user == request.user.id) {
+                election.remove();
+
+                return response.status(200).json({
+                    status: 'success',
+                    message: 'Election has been deleted'
+                });
+            } else {
+                return response.status(403).json({
+                    status: 'failed',
+                    message: 'You are not allowed to access this election'
+                });
+            }
+        } else {
+            return response.status(404).json({
+                status: 'failed',
+                message: 'Election was not found'
             });
+        }
     }
 };
 
