@@ -12,7 +12,7 @@ const elections = {
      * @param {Object} response Http response
      * @param {Object} next Next callable
      */
-    index (request, response, next) {
+    async index (request, response, next) {
         let pagination = Utilities.getPaginationParams(request.query);
         let query = Election.getQuery(request);
         let queryFilters = query.getQuery();
@@ -21,28 +21,24 @@ const elections = {
             status: 'success'
         };
 
-        query.skip(pagination.skip).limit(pagination.limit).sort('-createdAt')
-            .populate('categories').populate('user')
-            .then(elections => {
-                responseData.elections = elections;
+        try {
+            let elections = await query.skip(pagination.skip).limit(pagination.limit).sort('-createdAt')
+                                      .populate('categories')
+                                      .populate('user')
+                                      .exec();
 
-                if (elections.length) {
-                    return Election.countDocuments(queryFilters);
-                } else {
-                    return Promise.resolve(0);
-                }
-            })
-            .then(count => {
-                if (pagination.limit) {
-                    responseData = Utilities.setPaginationFields(request, responseData, count);
-                }
+            let total = elections.length ? (await Election.countDocuments(queryFilters).exec()) : 0;
 
-                return response.status(200).json(responseData);
-            })
-            .catch(error => {
-                error.status = 500;
-                next(error);
-            });
+            responseData.elections = elections;
+            if (pagination.limit) {
+                responseData = Utilities.setPaginationFields(request, responseData, total);
+            }
+
+            return response.status(200).json(responseData);
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
     },
 
     /**
