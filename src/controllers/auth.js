@@ -5,7 +5,6 @@ const dotenv = require('dotenv').config();
 const config = process.env;
 const Validator = require('validatorjs');
 const jwtSecret = config.SECRET.toString().trim();
-const _ = require('lodash');
 
 const auth = {
     /**
@@ -15,7 +14,7 @@ const auth = {
      * @param {Object} response Response object
      * @param {Object} next Next callable in chain
      */
-    register (request, response, next) {
+    async register (request, response, next) {
         // Set up validator for request input
         let validator = new Validator(request.body, {
             name: 'required',
@@ -23,45 +22,41 @@ const auth = {
             password: 'required|confirmed|min:6'
         });
 
+        let userData = {
+            email: request.body.email,
+            name: request.body.name,
+            password: request.body.password
+        };
+
         if (validator.passes()) {
-            User.findOne({email: request.body.email})
-                .exec()
-                .then(user => {
-                    if (user) {
-                        return response.status(422).json({
-                            errors: {
-                               email: 'Email has already been registered'
-                            }
-                        });
-                    }
-                })
-                .then(user => {
-                    let userData = {
-                        email: request.body.email,
-                        name: request.body.name,
-                        password: request.body.password
-                    };
+            try {
+                let existingUser = await User.findOne({email: request.body.email}).exec();
 
-                    User.create(userData, function (error, user) {
-                        if (error) {
-                            error.status = 500;
-                            return next(error);
-                        } else {
-                            let responseBody = {
-                                status: 'success',
-                                user: _.pick(user, ['name', 'email'])
-                            }
-
-                            return response.status(200).json(responseBody);
+                if (existingUser) {
+                    return response.status(422).json({
+                        errors: {
+                            email: 'Email has already been registered'
                         }
                     });
-                })
-                .catch(error => {
-                    error.status = 500;
-                    return next(error);
-                });
+                }
+
+                let user = await User.create(userData);
+
+                let responseBody = {
+                    status: 'success',
+                    user: {
+                        name: user.name,
+                        email: user.email
+                    }
+                };
+
+                return response.status(200).json(responseBody);
+            } catch (error) {
+                error.status = 500;
+                next(error);
+            }
         } else {
-            response.status(422).json({
+            return response.status(422).json({
                 errors: validator.errors.all()
             });
         }

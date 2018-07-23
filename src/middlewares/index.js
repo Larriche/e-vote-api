@@ -27,7 +27,7 @@ const useMiddleware = function (routes, middleware) {
 
 const setUp = function(router) {
     router.use(useMiddleware({
-        except: ['/auth/login', 'auth/register']
+        except: ['/auth/login', '/auth/register']
     }, verifyAuthentication));
 }
 
