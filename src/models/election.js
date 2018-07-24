@@ -3,7 +3,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Validator = require('validatorjs');
-const mongoosePaginate = require('mongoose-paginate');
 
 const services = require('../services');
 const Utilities = services.Utilities;

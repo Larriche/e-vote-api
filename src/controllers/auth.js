@@ -69,53 +69,54 @@ const auth = {
      * @param {Object} response Response object
      * @param {Object} next Next callable in chain
      */
-    login (request, response, next) {
+    async login (request, response, next) {
         let validator = new Validator(request.body, {
             email: 'required|email',
             password: 'required'
         });
 
         if (validator.passes()) {
-            User.findOne({ email: request.body.email })
-                .exec(function (error, user) {
-                    if (error) {
-                        error.status = 500;
-                        return next(error);
-                    } else if (!user) {
+            try {
+                let user = await User.findOne({ email: request.body.email }).exec();
+
+                if (!user) {
+                    return response.status(401).json({
+                        error: 'The given credentials do not match our records'
+                    });
+                }
+
+                bcrypt.compare(request.body.password, user.password, function (error, result) {
+                    if (result === true) {
+                        const payload = {
+                            id: user.id,
+                            email: user.email,
+                            name: user.name,
+                        };
+
+                        let token = jwt.sign(payload, jwtSecret, {
+                            expiresIn: config.JWT_EXPIRATION
+                        });
+
+                        payload.token = token;
+
+                        // return the information including token as JSON
+                        response.status(200)
+                            .json({
+                                status: 'success',
+                                user: payload
+                            });
+                    } else {
                         return response.status(401).json({
                             error: 'The given credentials do not match our records'
                         });
                     }
-
-                    bcrypt.compare(request.body.password, user.password, function (error, result) {
-                        if (result === true) {
-                            const payload = {
-                                id: user.id,
-                                email: user.email,
-                                username: user.username,
-                            };
-
-                            var token = jwt.sign(payload, jwtSecret, {
-                                expiresIn: config.JWT_EXPIRATION
-                            });
-
-                            payload.token = token;
-
-                            // return the information including token as JSON
-                            response.status(200)
-                                .json({
-                                    status: 'success',
-                                    user: payload
-                                });
-                        } else {
-                            return response.status(401).json({
-                                error: 'The given credentials do not match our records'
-                            });
-                        }
-                    })
                 });
+            } catch (error) {
+                error.status = 500;
+                next(error);
+            }
         } else {
-            response.status(422).json({
+            return response.status(422).json({
                 errors: validator.errors.all()
             });
         }
