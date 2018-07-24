@@ -12,7 +12,7 @@ const categories = {
      * @param {Object} response Http response
      * @param {Object} next The next callable
      */
-    store (request, response, next) {
+    async store (request, response, next) {
         let validationErrors = ElectionCategory.validate(request.body);
 
         if (Object.keys(validationErrors).length) {
@@ -22,59 +22,45 @@ const categories = {
             });
         }
 
-        let data = {
-            name: request.body.name,
-            election: request.body.election_id
-        };
+        try {
+            let data = {
+                name: request.body.name,
+                election: request.body.election_id
+            };
 
-        let createdCategory;
+            let createdCategory;
 
-        ElectionCategory.findOne({name: request.body.name, election: request.body.election_id})
-            .then(electionCategory => {
-                if (electionCategory) {
-                    let error = new Error();
+            let existingCategory = await ElectionCategory.findOne({
+                    name: request.body.name,
+                    election: request.body.election_id
+                }).exec();
 
-                    error.status = 422;
-                    error.errors = {
+            if (existingCategory) {
+                return response.status(422).json({
+                    errors: {
                         name: ['An election category with that name already exists']
-                    };
+                    }
+                });
+            }
 
-                    return Promise.reject(error);
-                } else {
-                    return ElectionCategory.create(data);
-                }
-            })
-            .then(category => {
-                createdCategory = category;
-                return Election.findById(request.body.election_id);
-            })
-            .then(election => {
-                if (election) {
-                    election.categories.push(createdCategory);
-                    election.save();
-                }
+            let category = await ElectionCategory.create(data);
 
-                return ElectionCategory.findOne({ _id: createdCategory.id }).populate('election');
-            })
-            .then(category => {
-                let responseData = {
-                    category,
-                    status: 'success'
-                };
+            let election = await Election.findById(request.body.election_id).exec();
+            election.categories.push(category);
+            election.save();
 
-                return response.status(200).json(responseData);
-            })
-            .catch(error => {
-                if (error.status == 422) {
-                    return response.status(422).json({
-                        errors: error.errors
-                    });
-                }
-                else {
-                    error.status = 500;
-                    next(error);
-                }
-            });
+            category = await ElectionCategory.findOne({ _id: category.id }).populate('election').exec();
+
+            let responseData = {
+                category,
+                status: 'success'
+            };
+
+            return response.status(200).json(responseData);
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
     }
 };
 
