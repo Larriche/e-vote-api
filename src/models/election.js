@@ -62,7 +62,7 @@ ElectionSchema.statics.validate = function(data)
  */
 ElectionSchema.statics.getQuery = function (request)
 {
-    let query = Election.find();
+    let query = Election.find({user: request.user.id});
 
     if (request.query.hasOwnProperty('start_time_before')) {
         query.where('start_time').lte(new Date(request.query.start_time_before + ' 23:59:00'));

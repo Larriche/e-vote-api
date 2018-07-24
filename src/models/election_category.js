@@ -32,5 +32,17 @@ ElectionCategorySchema.statics.validate = function(data)
     return errors;
 }
 
-var ElectionCategory = mongoose.model('ElectionCategory', ElectionCategorySchema);
+/**
+ * Get the query for object for getting election category listings
+ *
+ * @param {Object} request The request
+ * @param {Promise} Query filters
+ */
+ElectionCategorySchema.statics.getQuery = function (request) {
+    let query = ElectionCategory.find({election: request.params.election_id});
+
+    return query;
+}
+
+const ElectionCategory = mongoose.model('ElectionCategory', ElectionCategorySchema);
 module.exports = ElectionCategory;

@@ -21,7 +21,7 @@ function routes(router) {
     router.delete('/elections/:id', elections.destroy);
 
     // Election category routes
-    //router.get('/election_categories', categories.index);
+    router.get('/elections/:election_id/categories', categories.index);
     router.post('/election_categories', categories.store);
     //router.get('/election_categories/:id', categories.show);
     //router.put('/election_categories/:id', categories.update);

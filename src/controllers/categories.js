@@ -6,6 +6,41 @@ const Election = require('../models/election');
 
 const categories = {
     /**
+    * Get elections category created by the currently authenticated user
+    *
+    * @param {Object} request  Http request
+    * @param {Object} response Http response
+    * @param {Object} next Next callable
+    */
+    async index(request, response, next) {
+        let pagination = Utilities.getPaginationParams(request.query);
+        let query = ElectionCategory.getQuery(request);
+        let queryFilters = query.getQuery();
+
+        try {
+            let categories = await query.skip(pagination.skip).limit(pagination.limit).sort('-createdAt')
+                .populate('election')
+                .exec();
+
+            let total = categories.length ? (await ElectionCategory.countDocuments(queryFilters).exec()) : 0;
+
+            let responseData = {
+                categories,
+                status: 'success'
+            };
+
+            if (pagination.limit) {
+                responseData = Utilities.setPaginationFields(request, responseData, total);
+            }
+
+            return response.status(200).json(responseData);
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
+    },
+
+    /**
      * Create a new election category
      *
      * @param {Object} request Http request object
