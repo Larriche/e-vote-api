@@ -171,8 +171,16 @@ const categories = {
                 })
             }
 
-            category = Object.assign(category, request.body);
-            category.save();
+            let data = {
+                name: request.body.name,
+                election_id: request.body.election_id
+            };
+
+            category = await ElectionCategory.findByIdAndUpdate(request.params.id, data).exec();
+
+            category = await ElectionCategory.findById(request.params.id)
+                .populate('election')
+                .exec();
 
             return response.status(200).json({
                 status: 'success',
