@@ -24,7 +24,7 @@ const elections = {
         try {
             let elections = await query.skip(pagination.skip).limit(pagination.limit).sort('-createdAt')
                                       .populate('categories')
-                                      .populate('user')
+                                      .populate('user', 'name email')
                                       .exec();
 
             let total = elections.length ? (await Election.countDocuments(queryFilters).exec()) : 0;
