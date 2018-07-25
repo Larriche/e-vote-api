@@ -126,6 +126,62 @@ const categories = {
             error.status = 500;
             next(error);
         }
+    },
+
+    /**
+     * Update election category  with the given id
+     *
+     * @param {Object} request The HTTP request
+     * @param {Object} response The HTTP response
+     * @param {Object} next The next callable
+     */
+    async update (request, response, next) {
+        try {
+            let category = await ElectionCategory.findById(request.params.id).exec();
+
+            if (!category) {
+                return response.status(404).json({
+                    status: 'failed',
+                    message: 'Election category was not found'
+                });
+            }
+
+            let validationErrors = ElectionCategory.validate(request.body);
+
+            if (Object.keys(validationErrors).length) {
+                return response.status(422).json({
+                    errors: validationErrors,
+                    status: 'failed'
+                });
+            }
+
+            let existingCategory = await ElectionCategory.findOne({
+                    name: request.body.name,
+                    election: request.body.election_id,
+                    _id: { $ne: request.params.id }
+                })
+                .exec();
+
+            if (existingCategory) {
+                return response.status(422).json({
+                    errors: {
+                        name: ['Another election category with that name already exists']
+                    },
+                    status: 'failed'
+                })
+            }
+
+            category = Object.assign(category, request.body);
+            category.save();
+
+            return response.status(200).json({
+                status: 'success',
+                category
+            });
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
     }
 };
 
