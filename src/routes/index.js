@@ -23,7 +23,7 @@ function routes(router) {
     // Election category routes
     router.get('/elections/:election_id/categories', categories.index);
     router.post('/election_categories', categories.store);
-    //router.get('/election_categories/:id', categories.show);
+    router.get('/election_categories/:id', categories.show);
     //router.put('/election_categories/:id', categories.update);
     //router.delete('/election_categories/:id', categories.destroy);
 }

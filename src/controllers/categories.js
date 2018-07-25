@@ -96,6 +96,36 @@ const categories = {
             error.status = 500;
             next(error);
         }
+    },
+
+    /**
+     * Get election category with the given ID
+     *
+     * @param {Object} request Http request
+     * @param {Object} response Http response
+     * @param {Object} next The next callable
+     */
+    async show (request, response, next) {
+        try {
+            let category = await ElectionCategory.findById(request.params.id)
+                .populate('election')
+                .exec();
+
+            if (!category) {
+                return response.status(404).json({
+                    status: 'failed',
+                    message: 'Election category was not found'
+                });
+            } else {
+                return response.status(200).json({
+                    status: 'success',
+                    category
+                });
+            }
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
     }
 };
 
