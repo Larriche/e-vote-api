@@ -25,7 +25,7 @@ function routes(router) {
     router.post('/election_categories', categories.store);
     router.get('/election_categories/:id', categories.show);
     router.put('/election_categories/:id', categories.update);
-    //router.delete('/election_categories/:id', categories.destroy);
+    router.delete('/election_categories/:id', categories.destroy);
 }
 
 const setupRouter = function (app) {

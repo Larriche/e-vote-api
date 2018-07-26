@@ -190,6 +190,45 @@ const categories = {
             error.status = 500;
             next(error);
         }
+    },
+
+    /**
+     * Delete election with the given Id
+     *
+     * @param {Object} request The HTTP request
+     * @param {Object} response The HTTP response
+     * @param {Object} next The next callable
+     */
+    async destroy (request, response, next) {
+        try {
+            let category = await ElectionCategory.findById(request.params.id)
+                .populate('election')
+                .exec();
+
+            if (!category) {
+                return response.status(404).json({
+                    status: 'failed',
+                    message: 'Election category was not found'
+                });
+            }
+
+            if (category.election.user != request.user.id) {
+                return response.status(403).json({
+                    status: 'failed',
+                    message: 'You do not have permission to access this election category'
+                });
+            }
+
+            category.remove();
+
+            return response.status(200).json({
+                status: 'success',
+                message: 'Election category has been deleted'
+            });
+         } catch (error) {
+            error.status = 500;
+            next(error);
+        }
     }
 };
 
