@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-var VoterSchema = mongoose.schema({
+var VoterSchema = new Schema({
     name: {
         type: String,
         trim: true,
