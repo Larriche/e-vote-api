@@ -14,7 +14,7 @@ const auth = {
      * @param {Object} response Response object
      * @param {Object} next Next callable in chain
      */
-    async register (request, response, next) {
+    async register(request, response, next) {
         // Set up validator for request input
         let validator = new Validator(request.body, {
             name: 'required',
@@ -69,7 +69,7 @@ const auth = {
      * @param {Object} response Response object
      * @param {Object} next Next callable in chain
      */
-    async login (request, response, next) {
+    async login(request, response, next) {
         let validator = new Validator(request.body, {
             email: 'required|email',
             password: 'required'

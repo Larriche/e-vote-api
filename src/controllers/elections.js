@@ -12,7 +12,7 @@ const elections = {
      * @param {Object} response Http response
      * @param {Object} next Next callable
      */
-    async index (request, response, next) {
+    async index(request, response, next) {
         let pagination = Utilities.getPaginationParams(request.query);
         let query = Election.getQuery(request);
         let queryFilters = query.getQuery();
@@ -48,7 +48,7 @@ const elections = {
      * @param {Object} response Http Response
      * @param {Object} next Next callable
      */
-    async store (request, response, next) {
+    async store(request, response, next) {
         let validationErrors = Election.validate(request.body);
 
         if (Object.keys(validationErrors).length) {
@@ -105,7 +105,7 @@ const elections = {
      * @param {Object} response The HTTP response
      * @param {Object} next The next callable
      */
-    async show (request, response, next) {
+    async show(request, response, next) {
         let election;
 
         try {
@@ -144,7 +144,7 @@ const elections = {
      * @param {Object} response Http Response
      * @param {Object} next The next callable
      */
-    async update (request, response, next) {
+    async update(request, response, next) {
         let validationErrors = Election.validate(request.body);
 
         let electionData = {
@@ -224,7 +224,7 @@ const elections = {
      * @param {Object} response The HTTP response
      * @param {Object} next The next callable
      */
-    async destroy (request, response, next) {
+    async destroy(request, response, next) {
         let election;
 
         try {
