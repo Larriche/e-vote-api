@@ -21,5 +21,11 @@ var VoterSchema = new Schema({
     }
 });
 
+VoterSchema.statics.getQuery =  function (request) {
+    let query = Voter.find({election: request.params.election_id});
+
+    return query;
+}
+
 var Voter = mongoose.model('Voter', VoterSchema);
 module.exports = Voter;

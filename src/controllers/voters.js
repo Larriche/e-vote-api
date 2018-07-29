@@ -13,6 +13,30 @@ const voters = {
      */
     async index(request, response, next) {
         let pagination = Utilities.getPaginationParams(request.query);
+        let query = Voter.getQuery(request);
+        let queryFilters = query.getQuery();
+
+        try {
+            let voters = await query.skip(pagination.skip).limit(pagination).sort('-createdAt')
+                .populate('election')
+                .exec();
+
+            let total = voters.length ? (await Voter.countDocuments(queryFilters).exec()) : 0;
+
+            let responseData = {
+                voters,
+                status: 'success'
+            };
+
+            if (pagination.limit) {
+                responseData = Utilities.setPaginationFields(request, responseData, total);
+            }
+
+            return response.status(200).json(responseData);
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
     }
 }
 

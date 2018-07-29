@@ -7,6 +7,7 @@ const middlewares = require('../middlewares');
 const auth = require('../controllers/auth');
 const elections = require('../controllers/elections');
 const categories = require('../controllers/categories');
+const voters = require('../controllers/voters');
 
 
 function routes(router) {
@@ -26,6 +27,9 @@ function routes(router) {
     router.get('/election_categories/:id', categories.show);
     router.put('/election_categories/:id', categories.update);
     router.delete('/election_categories/:id', categories.destroy);
+
+    // Voters routes
+    router.get('/elections/:election_id/voters', voters.index);
 }
 
 const setupRouter = function (app) {
