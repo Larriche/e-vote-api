@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const Validator = require('validatorjs');
+
 var VoterSchema = new Schema({
     name: {
         type: String,
@@ -20,6 +22,23 @@ var VoterSchema = new Schema({
         ref: 'Election'
     }
 });
+
+VoterSchema.statics.validate = function (data) {
+    let rules = {
+        name: 'required',
+        email: 'required|email'
+    };
+
+    let errors = {};
+
+    let validator = new Validator(data, rules);
+
+    if (!validator.passes()) {
+        errors = validators.errors.all();
+    }
+
+    return errors;
+}
 
 VoterSchema.statics.getQuery =  function (request) {
     let query = Voter.find({election: request.params.election_id});

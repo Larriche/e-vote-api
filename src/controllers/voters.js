@@ -37,6 +37,18 @@ const voters = {
             error.status = 500;
             next(error);
         }
+    },
+
+    /**
+     * Register a new voter for an election
+     *
+     * @param {Object} request The HTTP request
+     * @param {Object} response The HTTP response
+     * @param {Object} next The next callble middleware
+     */
+    async store(request, response, next) {
+        let validationErrors = Voter.validate(request.body);
+
     }
 }
 

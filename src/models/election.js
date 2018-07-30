@@ -27,8 +27,7 @@ var ElectionSchema = new Schema({
     timestamps: true
 });
 
-ElectionSchema.statics.validate = function(data)
-{
+ElectionSchema.statics.validate = function(data) {
     let rules = {
         name: 'required',
         start_time: 'required|date',
@@ -60,8 +59,7 @@ ElectionSchema.statics.validate = function(data)
  * @param {Object} request The request
  * @param {Promise} Query filters
  */
-ElectionSchema.statics.getQuery = function (request)
-{
+ElectionSchema.statics.getQuery = function (request) {
     let query = Election.find({user: request.user.id});
 
     if (request.query.hasOwnProperty('start_time_before')) {
