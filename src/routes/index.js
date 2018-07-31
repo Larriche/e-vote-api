@@ -30,6 +30,7 @@ function routes(router) {
 
     // Voters routes
     router.get('/elections/:election_id/voters', voters.index);
+    router.post('/voters', voters.store);
 }
 
 const setupRouter = function (app) {

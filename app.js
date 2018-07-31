@@ -24,6 +24,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 setupRoutes(app);
 
+// Handle 404s
+app.use('*', function(req, res, next) {
+    res.status(404).json({
+        message: 'Route does not exist'
+    });
+});
+
 // Final error handler
 app.use(function (err, req, res, next) {
     console.log(err);

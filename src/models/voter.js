@@ -26,7 +26,8 @@ var VoterSchema = new Schema({
 VoterSchema.statics.validate = function (data) {
     let rules = {
         name: 'required',
-        email: 'required|email'
+        email: 'required|email',
+        election_id: 'required'
     };
 
     let errors = {};
@@ -34,11 +35,11 @@ VoterSchema.statics.validate = function (data) {
     let validator = new Validator(data, rules);
 
     if (!validator.passes()) {
-        errors = validators.errors.all();
+        errors = validator.errors.all();
     }
 
     return errors;
-}
+};
 
 VoterSchema.statics.getQuery =  function (request) {
     let query = Voter.find({election: request.params.election_id});
