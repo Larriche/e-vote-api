@@ -76,7 +76,8 @@ const voters = {
 
             if (Object.keys(errors).length) {
                 return response.status(422).json({
-                    errors
+                    errors,
+                    status: 'failed'
                 });
             }
 
@@ -86,6 +87,17 @@ const voters = {
                 token: uuid(),
                 election: request.body.election_id
             }
+
+            let voter = await Voter.create(voterData);
+            voter = await Voter.findById( voter._id )
+                .populate('election')
+                .exec();
+
+            return response.status(200).json({
+                status: 'success',
+                voter
+            });
+
         } catch (error) {
             error.status = 500;
             next(error);
