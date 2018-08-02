@@ -102,6 +102,43 @@ const voters = {
             error.status = 500;
             next(error);
         }
+    },
+
+    /**
+     * Get the voter with the given ID
+     *
+     * @param {Object} request The HTTP request
+     * @param {Object} response The HTTP response
+     * @param {Object} next Next callable
+     */
+    async show(request, response, next) {
+        try {
+            let voter = await Voter.findById(request.params.id)
+                .populate('election')
+                .exec();
+
+            if (!voter) {
+                return response.status(404).json({
+                    status: 'failed',
+                    message: 'Voter was not found'
+                });
+            }
+
+            if (voter.election.user != request.user.id) {
+                return response.status(403).json({
+                    status: 'failed',
+                    message: 'You are not allowed to access this voter'
+                });
+            }
+
+            return response.status(200).json({
+                status: 'success',
+                voter
+            });
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
     }
 }
 
