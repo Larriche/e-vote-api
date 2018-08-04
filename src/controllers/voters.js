@@ -176,6 +176,40 @@ const voters = {
                     message: 'You are not allowed to access this voter'
                 });
             }
+
+            let existingVoter = await Voter.findOne({
+                    name: request.body.name,
+                    election: request.body.election_id,
+                    _id: { $ne: request.params.id }
+                })
+                .exec();
+
+            if (existingVoter) {
+                return response.status(422).json({
+                    errors: {
+                        name: ['A voter with that name already exists']
+                    },
+                    status: 'failed'
+                });
+            }
+
+            let voterData = {
+                name: request.body.name,
+                email: request.body.email,
+                election: request.body.election_id
+            }
+
+            let updatedVoter = await Voter.findByIdAndUpdate(request.params.id, voterData)
+                .exec();
+
+            voter = await Voter.findById(request.params.id)
+                .populate('election')
+                .exec();
+
+            return response.status(200).json({
+                status: 'success',
+                voter
+            });
         } catch (error) {
             error.status = 500;
             next(error);
