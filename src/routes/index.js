@@ -33,6 +33,7 @@ function routes(router) {
     router.post('/voters', voters.store);
     router.get('/voters/:id', voters.show);
     router.put('/voters/:id', voters.update);
+    router.delete('/voters/:id', voters.destroy);
 }
 
 const setupRouter = function (app) {

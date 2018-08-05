@@ -142,12 +142,12 @@ const voters = {
     },
 
     /**
-   * Update the voter with the given ID
-   *
-   * @param {Object} request HTTP request
-   * @param {Object} response HTTP response
-   * @param {Object} next Next callable
-   */
+     * Update the voter with the given ID
+     *
+     * @param {Object} request HTTP request
+     * @param {Object} response HTTP response
+     * @param {Object} next Next callable
+     */
     async update(request, response, next) {
         try {
             let validationErrors = Voter.validate(request.body);
@@ -209,6 +209,45 @@ const voters = {
             return response.status(200).json({
                 status: 'success',
                 voter
+            });
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
+    },
+
+    /**
+     * Delete the voter with the given id
+     *
+     * @param {Object} request HTTP request
+     * @param {Object} response HTTP response
+     * @param {Object} next Next callable
+     */
+    async destroy(request, response, next) {
+        try {
+            let voter = await Voter.findById(request.params.id)
+                .populate('election')
+                .exec();
+
+            if (!voter) {
+                return response.status(404).json({
+                    status: 'failed',
+                    message: 'Voter was not found'
+                });
+            }
+
+            if (voter.election.user != request.user.id) {
+                return response.status(403).json({
+                    status: 'failed',
+                    message: 'You are not allowed to access this voter'
+                });
+            }
+
+            voter.remove();
+
+            return response.status(200).json({
+                status: 'success',
+                message: 'Voter has been removed successfully'
             });
         } catch (error) {
             error.status = 500;
