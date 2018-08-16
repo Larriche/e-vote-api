@@ -5,6 +5,7 @@ const http = require('http').Server(app);
 const port = process.env.PORT || 3000;
 const bodyParser = require('body-parser');
 const setupRoutes = require('./src/routes');
+const boot = require('./src/services/utilities').boot;
 
 const db_username = process.env.DB_USERNAME;
 const db_password = process.env.DB_PASSWORD;
@@ -41,4 +42,5 @@ app.use(function (err, req, res, next) {
 
 http.listen(port, function () {
     console.log('Express server is listening on port', port);
+    boot();
 });

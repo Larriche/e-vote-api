@@ -1,4 +1,6 @@
 const queryString = require('query-string');
+const path = require('path');
+const fs = require('fs');
 
 const Utilities = {
     /**
@@ -7,8 +9,7 @@ const Utilities = {
      * @param {Object} requestData Data from a get request
      * @return {Object} queryParams Constructed query params
      */
-    getPaginationParams (requestData)
-    {
+    getPaginationParams (requestData) {
         let pagination = {
             skip: null,
             limit: null
@@ -32,8 +33,7 @@ const Utilities = {
      * @param {Object} responseData Data about to be sent as a response
      * @param {Integer} total Total number of resources
      */
-    setPaginationFields (request, responseData, total)
-    {
+    setPaginationFields (request, responseData, total) {
         if (!request.query.hasOwnProperty('per_page')) {
             return responseData;
         }
@@ -64,6 +64,18 @@ const Utilities = {
         }
 
         return responseData;
+    },
+
+    /**
+     * Do certain initializations on the app such as creating needed storage folders
+     *
+     */
+    boot() {
+        let candidatePhotosDir = path.join(__dirname, '../../uploads/candidate_images/');
+
+        if (!fs.existsSync(candidatePhotosDir)) {
+            fs.mkdirSync(candidatePhotosDir);
+        }
     }
 };
 
