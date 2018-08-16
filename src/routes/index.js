@@ -9,21 +9,6 @@ const elections = require('../controllers/elections');
 const categories = require('../controllers/categories');
 const voters = require('../controllers/voters');
 const candidates = require('../controllers/candidates');
-const multer = require('multer');
-const path = require('path');
-
-const storage = multer.diskStorage({
-    destination: function (req, file, next) {
-        next(null, path.join(__dirname, '../../temp/'));
-    },
-    filename: function (req, file, next) {
-        let extension = file.originalname.split(".").pop();
-
-        next(null, Date.now() + '.' + extension);
-    }
-});
-
-const upload = multer({ storage });
 
 function routes(router) {
     router.post('/auth/register', auth.register);
@@ -51,7 +36,7 @@ function routes(router) {
     router.delete('/voters/:id', voters.destroy);
 
     // Election candidate routes
-    router.post('/candidates', upload.single('candidate_photo'), candidates.store);
+    router.post('/candidates', candidates.store);
 }
 
 const setupRouter = function (app) {

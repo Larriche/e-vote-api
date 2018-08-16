@@ -20,8 +20,6 @@ const candidates = {
                 });
             }
 
-            request.body = JSON.parse(JSON.stringify(request.body));
-
             let errors = {};
 
             let election = await Election.find({_id: request.body.election_id, user: request.user.id}).exec();
