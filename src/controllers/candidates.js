@@ -1,5 +1,7 @@
 const ElectionCandidate = require('../models/election_candidate');
 const Election = require('../models/election');
+const fs = require('fs');
+const path = require('path');
 
 const candidates = {
     /**
@@ -65,6 +67,14 @@ const candidates = {
             }
 
             candidate = await ElectionCandidate.findById(candidate._id).populate('election').populate('categories').exec();
+
+            // Move candidate's uploaded avatar file to permanent storage
+            let oldPath = request.file.path;
+            let destFolder = path.join(__dirname, '../../uploads/candidate_images/');
+            let ext = request.file.filename.split(".").pop();
+            let newName = candidate._id + '.' + ext;
+
+            fs.rename(oldPath, destFolder + newName);
 
             return response.status(200).json({
                 status: 'success',
