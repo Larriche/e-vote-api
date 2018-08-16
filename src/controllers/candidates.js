@@ -1,5 +1,7 @@
 const ElectionCandidate = require('../models/election_candidate');
+const ElectionCategory = require('../models/election_category');
 const Election = require('../models/election');
+const Utilities = require('../services/utilities');
 const fs = require('fs');
 const path = require('path');
 
@@ -61,7 +63,7 @@ const candidates = {
                 for (let categoryId of request.body.categories) {
                     let category = await ElectionCategory.findById(categoryId).exec();
 
-                    candidate.push(category);
+                    candidate.categories.push(category);
                     candidate.save();
                 }
             }
@@ -69,17 +71,25 @@ const candidates = {
             candidate = await ElectionCandidate.findById(candidate._id).populate('election').populate('categories').exec();
 
             // Move candidate's uploaded avatar file to permanent storage
-            let oldPath = request.file.path;
-            let destFolder = path.join(__dirname, '../../uploads/candidate_images/');
-            let ext = request.file.filename.split(".").pop();
-            let newName = candidate._id + '.' + ext;
+            if (Object.keys(request).indexOf('file') > -1) {
+                let destFolder = path.join(__dirname, '../../uploads/candidate_images/');
+                let newName = candidate._id + '.' + request.file.filename.split(".").pop();
 
-            fs.rename(oldPath, destFolder + newName);
+                Utilities.moveUploadedFile(request.file, destFolder + newName, function() {
+                    candidate.photo_url = 'uploads/candidate_images/' + newName;
+                    candidate.save();
 
-            return response.status(200).json({
-                status: 'success',
-                candidate
-            });
+                    return response.status(200).json({
+                        status: 'success',
+                        candidate
+                    });
+                });
+            } else {
+                return response.status(200).json({
+                    status: 'success',
+                    candidate
+                });
+            }
         } catch (error) {
             error.status = 500;
             next(error);

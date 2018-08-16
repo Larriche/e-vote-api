@@ -6,6 +6,7 @@ const port = process.env.PORT || 3000;
 const bodyParser = require('body-parser');
 const setupRoutes = require('./src/routes');
 const boot = require('./src/services/utilities').boot;
+const fs = require('fs');
 
 const db_username = process.env.DB_USERNAME;
 const db_password = process.env.DB_PASSWORD;
@@ -35,6 +36,10 @@ app.use('*', function(req, res, next) {
 // Final error handler
 app.use(function (err, req, res, next) {
     console.log(err);
+    if (Object.keys(req).indexOf('file') > -1) {
+        fs.unlink(req.file.path);
+    }
+
     res.status(err.status || 500).json({
         errors: ['An unknown error occurred']
     });

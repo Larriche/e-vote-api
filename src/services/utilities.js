@@ -67,6 +67,19 @@ const Utilities = {
     },
 
     /**
+     * Move file that has been temporarily uploaded into its final destination
+     *
+     * @param {Object} file File object after upload by multer
+     * @param {String} finalDestination Path for file's resting place
+     * @param {Function} callback Callback after file move operation
+     */
+    moveUploadedFile (file, finalDestination, callback) {
+        let oldPath = file.path;
+
+        fs.rename(oldPath, finalDestination, callback);
+    },
+
+    /**
      * Do certain initializations on the app such as creating needed storage folders
      *
      */
