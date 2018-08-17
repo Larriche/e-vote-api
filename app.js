@@ -20,6 +20,9 @@ var db = mongoose.connection;
 // Log mongodb errors
 db.on('error', console.error.bind(console, 'connection error:'));
 
+const express = require('express');
+app.use(express.static('public'));
+
 // Pass incoming requests through body parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

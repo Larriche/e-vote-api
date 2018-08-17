@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Validator = require('validatorjs');
+const Utilities = require('../services/utilities');
 
 var ElectionCandidateSchema = new Schema({
     name: {
@@ -34,5 +35,4 @@ ElectionCandidateSchema.statics.validate = function (data) {
 };
 
 var ElectionCandidate = mongoose.model('ElectionCandidate', ElectionCandidateSchema);
-
 module.exports = ElectionCandidate;

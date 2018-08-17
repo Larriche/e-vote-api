@@ -72,12 +72,15 @@ const candidates = {
 
             // Move candidate's uploaded avatar file to permanent storage
             if (Object.keys(request).indexOf('file') > -1) {
-                let destFolder = path.join(__dirname, '../../uploads/candidate_images/');
+                let destFolder = path.join(__dirname, '../../public/uploads/candidate_images/');
                 let newName = candidate._id + '.' + request.file.filename.split(".").pop();
 
                 Utilities.moveUploadedFile(request.file, destFolder + newName, function() {
                     candidate.photo_url = 'uploads/candidate_images/' + newName;
                     candidate.save();
+
+                    candidate = candidate.toJSON();
+                    candidate.photo_src = Utilities.generateFileUrl(candidate.photo_url);
 
                     return response.status(200).json({
                         status: 'success',

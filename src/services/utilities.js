@@ -1,6 +1,6 @@
 const queryString = require('query-string');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 
 const Utilities = {
     /**
@@ -84,11 +84,20 @@ const Utilities = {
      *
      */
     boot() {
-        let candidatePhotosDir = path.join(__dirname, '../../uploads/candidate_images/');
+        let candidatePhotosDir = path.join(__dirname, '../../public/uploads/candidate_images/');
 
-        if (!fs.existsSync(candidatePhotosDir)) {
-            fs.mkdirSync(candidatePhotosDir);
+        fs.ensureDirSync(candidatePhotosDir);
+    },
+
+    generateFileUrl(filePath) {
+        let server = process.env.APP_URL;
+        let port = process.env.PORT;
+
+        if (!filePath) {
+            return '';
         }
+
+        return server + ':' + port + '/' + filePath;
     }
 };
 
