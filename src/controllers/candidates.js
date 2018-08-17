@@ -80,7 +80,7 @@ const candidates = {
                     candidate.save();
 
                     candidate = candidate.toJSON();
-                    candidate.photo_src = Utilities.generateFileUrl(candidate.photo_url);
+                    candidate.photo_url = Utilities.generateFileUrl(candidate.photo_url);
 
                     return response.status(200).json({
                         status: 'success',
