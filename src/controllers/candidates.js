@@ -7,6 +7,47 @@ const path = require('path');
 
 const candidates = {
     /**
+     * Get a listing of election candidates
+     *
+     * @param {Object} request HTTP request
+     * @param {Object} response HTTP response
+     * @param {Function} next Next callable
+     */
+    async index(request, response, next) {
+        let pagination = Utilities.getPaginationParams(request.query);
+        let query = ElectionCandidate.getQuery(request);
+        let queryFilters = query.getQuery();
+
+        try {
+            let candidates = await query.skip(pagination.skip).limit(pagination.limit).sort('name')
+                .populate('election')
+                .populate('categories')
+                .exec();
+
+            let total = candidates.length ? (await ElectionCandidate.countDocuments(queryFilters).exec()) : 0;
+
+            for (var i = 0; i < candidates.length; i++) {
+                candidates[i] = candidates[i].toJSON();
+                candidates[i].photo_url = Utilities.generateFileUrl(candidates[i].photo_url);
+            }
+
+            let responseData = {
+                candidates,
+                status: 'success'
+            };
+
+            if (pagination.limit) {
+                responseData = Utilities.setPaginationFields(request, responseData, total);
+            }
+
+            return response.status(200).json(responseData);
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
+    },
+
+    /**
      * Add a new candidate for an election
      *
      * @param {Object} request HTTP request

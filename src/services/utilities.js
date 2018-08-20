@@ -11,15 +11,18 @@ const Utilities = {
      */
     getPaginationParams (requestData) {
         let pagination = {
-            skip: null,
-            limit: null
+            skip: 0,
+            limit: 0
         };
 
         if (requestData.hasOwnProperty('per_page')) {
-            pagination.limit = requestData.per_page;
+            let perPage = Number(requestData.per_page);
+            let page = requestData.hasOwnProperty('page') ? Number(requestData.page) : 1;
+
+            pagination.limit = perPage;
 
             if (requestData.hasOwnProperty('page')) {
-               pagination.skip = (Number(requestData.page) - 1) * Number(requestData.per_page);
+               pagination.skip = (page - 1) * perPage;
             }
         }
 

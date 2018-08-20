@@ -34,5 +34,11 @@ ElectionCandidateSchema.statics.validate = function (data) {
     return errors;
 };
 
+ElectionCandidateSchema.statics.getQuery = function (request) {
+    let query = ElectionCandidate.find({election: request.params.election_id});
+
+    return query;
+}
+
 var ElectionCandidate = mongoose.model('ElectionCandidate', ElectionCandidateSchema);
 module.exports = ElectionCandidate;

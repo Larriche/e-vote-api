@@ -20,7 +20,7 @@ const voters = {
         let queryFilters = query.getQuery();
 
         try {
-            let voters = await query.skip(pagination.skip).limit(pagination).sort('-createdAt')
+            let voters = await query.skip(pagination.skip).limit(pagination.limit).sort('-createdAt')
                 .populate('election')
                 .exec();
 

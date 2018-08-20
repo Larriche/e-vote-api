@@ -36,6 +36,7 @@ function routes(router) {
     router.delete('/voters/:id', voters.destroy);
 
     // Election candidate routes
+    router.get('/elections/:election_id/candidates', candidates.index);
     router.post('/candidates', candidates.store);
 }
 
