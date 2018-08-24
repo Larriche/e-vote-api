@@ -38,6 +38,7 @@ function routes(router) {
     // Election candidate routes
     router.get('/elections/:election_id/candidates', candidates.index);
     router.post('/candidates', candidates.store);
+    router.get('/candidates/:id', candidates.show);
 }
 
 const setupRouter = function (app) {

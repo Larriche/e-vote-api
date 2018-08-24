@@ -157,7 +157,37 @@ const candidates = {
      * @param {Function} next Next callable
      */
     async show(request, response, next) {
+        try {
+            let candidate = await ElectionCandidate.findById(request.params.id)
+                .populate('election')
+                .populate('categories')
+                .exec();
 
+            if (!candidate) {
+                return response.status(404).json({
+                    message: 'Candidate was not found',
+                    status: 'failed'
+                })
+            }
+
+            if (candidate.election.user != request.user.id) {
+                return response.status(403).json({
+                        message: 'You do not have access to this election candidate',
+                        status: 'failed'
+                    })
+            }
+
+            candidate = candidate.toJSON();
+            candidate.photo_url = Utilities.generateFileUrl(candidate.photo_url);
+
+            return response.status(200).json({
+                candidate,
+                status: 'success'
+            });
+        } catch (error) {
+            error.status = 500;
+            next(error);
+        }
     }
 }
 
