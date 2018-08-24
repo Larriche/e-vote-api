@@ -19,6 +19,15 @@ const candidates = {
         let queryFilters = query.getQuery();
 
         try {
+            let election = await Election.findById(request.params.election_id).exec();
+
+            if (election.user != request.user.id) {
+                return response.status(403).json({
+                    status: 'failed',
+                    message: 'You do not have access to this election'
+                });
+            }
+
             let candidates = await query.skip(pagination.skip).limit(pagination.limit).sort('name')
                 .populate('election')
                 .populate('categories')
@@ -138,6 +147,17 @@ const candidates = {
             error.status = 500;
             next(error);
         }
+    },
+
+    /**
+     * Get an election candidate by his id
+     *
+     * @param {Object} request HTTP request
+     * @param {Object} response HTTP response
+     * @param {Function} next Next callable
+     */
+    async show(request, response, next) {
+
     }
 }
 
